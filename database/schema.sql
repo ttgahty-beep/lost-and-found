@@ -20,6 +20,7 @@ DROP TRIGGER IF EXISTS trg_lost_items_before_match;
 DROP TRIGGER IF EXISTS trg_lost_items_after_match;
 DROP TRIGGER IF EXISTS trg_found_items_before_match;
 DROP TRIGGER IF EXISTS trg_found_items_after_match;
+DROP TRIGGER IF EXISTS trg_found_items_match;
 
 -- Drop audit triggers
 DROP TRIGGER IF EXISTS trg_claims_audit_update;
