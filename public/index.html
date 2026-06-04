@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Lost & Found Management System - Advanced DBMS Project</title>
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-theme">
+
+  <!-- ================================================================= -->
+  <!-- 1. AUTHENTICATION MODULE (LOGIN / REGISTRATION SCREEN)            -->
+  <!-- ================================================================= -->
+  <div id="auth-container" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-glow">
+          <i class="fa-solid fa-radar fa-spin"></i>
+        </div>
+        <h1>Smart Lost & Found</h1>
+        <p class="subtitle">Advanced Campus Asset Recovery & DBMS Monitor</p>
+      </div>
+
+      <!-- Group Members Banner -->
+      <div class="group-members-badge">
+        <span><i class="fa-solid fa-graduation-cap"></i> Project Team:</span>
+        <div class="members-list">
+          <span class="member-tag">Ahtesha</span>
+          <span class="member-tag">Salman</span>
+          <span class="member-tag">Hussain</span>
+          <span class="member-tag">Karam</span>
+          <span class="member-tag">Shahzaib</span>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active">
+        <div class="form-group">
+          <label for="login-email"><i class="fa-solid fa-envelope"></i> Campus Email</label>
+          <input type="email" id="login-email" placeholder="e.g. salman@uni.edu" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div id="login-error" class="error-alert hidden"></div>
+        <button type="submit" class="btn btn-primary btn-block">Authenticate Session <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+        <p class="auth-switch">New user? <a href="#" id="show-register-btn">Register Academic Account</a></p>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="reg-name"><i class="fa-solid fa-user"></i> Full Name</label>
+          <input type="text" id="reg-name" placeholder="e.g. Salman Hussain" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="reg-email"><i class="fa-solid fa-envelope"></i> Campus Email</label>
+          <input type="email" id="reg-email" placeholder="e.g. salman@uni.edu" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="reg-password"><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="reg-password" placeholder="••••••••" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="reg-phone"><i class="fa-solid fa-phone"></i> Contact Phone (Min 10 Digits)</label>
+          <input type="tel" id="reg-phone" placeholder="e.g. 03112223334" required autocomplete="tel">
+        </div>
+        <div class="form-group">
+          <label for="reg-role"><i class="fa-solid fa-shield-halved"></i> Account Authority</label>
+          <select id="reg-role">
+            <option value="user">Student / Faculty</option>
+            <option value="admin">Administrator Staff</option>
+          </select>
+        </div>
+        <div id="register-error" class="error-alert hidden"></div>
+        <div id="register-success" class="success-alert hidden"></div>
+        <button type="submit" class="btn btn-accent btn-block">Provision Account <i class="fa-solid fa-user-plus"></i></button>
+        <p class="auth-switch">Existing credential? <a href="#" id="show-login-btn">Log In</a></p>
+      </form>
+
+      <div class="auth-footer">
+        <p>DBMS Semester Project &copy; 2026. Built with Node.js & MySQL.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- 2. MAIN APPLICATION WORKSPACE (DASHBOARD & NAVIGATION)           -->
+  <!-- ================================================================= -->
+  <div id="app-container" class="app-layout hidden">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo"><i class="fa-solid fa-radar text-accent animate-pulse"></i></div>
+        <div class="brand-text">
+          <h2>Lost & Found</h2>
+          <span class="role-badge" id="user-role-display">Student</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="#" class="nav-item active" data-target="pane-dashboard">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item" data-target="pane-report">
+          <i class="fa-solid fa-file-signature"></i> Report Item
+        </a>
+        <a href="#" class="nav-item" data-target="pane-search">
+          <i class="fa-solid fa-magnifying-glass"></i> Search DB
+        </a>
+        <a href="#" class="nav-item" id="nav-claims" data-target="pane-claims">
+          <i class="fa-solid fa-stamp"></i> Claim Verification
+        </a>
+        <a href="#" class="nav-item" data-target="pane-reports">
+          <i class="fa-solid fa-file-invoice"></i> Report Center
+        </a>
+        
+        <div class="menu-divider">Database Administration</div>
+        
+        <a href="#" class="nav-item admin-only" data-target="pane-monitor">
+          <i class="fa-solid fa-chart-line-up"></i> Database Monitor
+        </a>
+        <a href="#" class="nav-item admin-only" data-target="pane-audit">
+          <i class="fa-solid fa-book-journal-whills"></i> Audit Log Trail
+        </a>
+        <a href="#" class="nav-item" data-target="pane-viva">
+          <i class="fa-solid fa-graduation-cap text-yellow"></i> DBMS Demonstration
+        </a>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="user-avatar">
+          <i class="fa-solid fa-circle-user"></i>
+        </div>
+        <div class="user-info">
+          <h4 id="user-name-display">Salman Hussain</h4>
+          <p id="user-email-display">salman@uni.edu</p>
+        </div>
+        <button id="logout-btn" class="btn-logout" title="Sign Out">
+          <i class="fa-solid fa-power-off"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top header bar -->
+      <header class="top-bar">
+        <div class="top-bar-title">
+          <h1 id="page-title">Analytics Dashboard</h1>
+          <p class="text-muted" id="page-subtitle">Real-time status of university lost & found database</p>
+        </div>
+        
+        <!-- Notification Center -->
+        <div class="top-bar-actions">
+          <div id="db-status-pill" class="status-pill connected">
+            <span class="indicator"></span> <span class="label">MySQL Connected</span>
+          </div>
+
+          <div class="notification-bell" id="notification-trigger">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge hidden" id="notification-badge">0</span>
+            
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown hidden" id="notification-menu">
+              <div class="dropdown-header">
+                <h3>Notifications</h3>
+                <button id="mark-all-read-btn" class="btn-text">Mark all read</button>
+              </div>
+              <div class="dropdown-list" id="notification-list">
+                <div class="empty-state">No new notifications</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- PANES CONTAINER -->
+      <div class="pane-content">
+        
+        <!-- ========================================================= -->
+        <!-- PANE: DASHBOARD                                            -->
+        <!-- ========================================================= -->
+        <div class="pane active" id="pane-dashboard">
+          
+          <!-- Statistics Cards Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon bg-blue"><i class="fa-solid fa-users"></i></div>
+              <div class="stat-data">
+                <span class="card-title">Total Users</span>
+                <h3 id="stat-total-users">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon bg-yellow"><i class="fa-solid fa-question"></i></div>
+              <div class="stat-data">
+                <span class="card-title">Lost Reports</span>
+                <h3 id="stat-total-lost">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon bg-green"><i class="fa-solid fa-box-open"></i></div>
+              <div class="stat-data">
+                <span class="card-title">Found Items</span>
+                <h3 id="stat-total-found">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon bg-cyan"><i class="fa-solid fa-code-fork"></i></div>
+              <div class="stat-data">
+                <span class="card-title">Auto Matches</span>
+                <h3 id="stat-total-matches">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon bg-purple"><i class="fa-solid fa-file-circle-question"></i></div>
+              <div class="stat-data">
+                <span class="card-title">Pending Claims</span>
+                <h3 id="stat-pending-claims">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon bg-emerald"><i class="fa-solid fa-handshake"></i></div>
+              <div class="stat-data">
+                <span class="card-title">Returned Items</span>
+                <h3 id="stat-returned-items">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts & Intelligent Match Lists -->
+          <div class="dashboard-charts-grid">
+            <div class="chart-card">
+              <h3>Monthly Reporting Trends</h3>
+              <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3>Claims Status & Category Density</h3>
+              <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matches Section -->
+          <div class="card mt-24">
+            <div class="card-header">
+              <div>
+                <h2>Intelligent Match Recommendations</h2>
+                <p class="text-muted">Calculated in real-time by database-level triggers comparing categories, colors, locations, and titles</p>
+              </div>
+              <span class="badge badge-accent">Triggers Active</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="dashboard-matches-table">
+                <thead>
+                  <tr>
+                    <th>Match ID</th>
+                    <th>Lost Item (Reporter)</th>
+                    <th>Found Item (Finder)</th>
+                    <th>Confidence Score</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: REPORT ITEM FORM                                     -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-report">
+          <div class="report-form-grid">
+            <!-- Left Side form -->
+            <div class="card">
+              <h2>Report Lost or Found Asset</h2>
+              <p class="text-muted mb-24">Please fill details. Validations are enforced on database tables.</p>
+              
+              <div class="btn-group mb-24">
+                <button type="button" id="toggle-type-lost" class="btn btn-primary active">Lost Report</button>
+                <button type="button" id="toggle-type-found" class="btn btn-outline">Found Report</button>
+              </div>
+
+              <form id="report-item-form">
+                <div class="form-group">
+                  <label for="item-title">Item Title / Name *</label>
+                  <input type="text" id="item-title" placeholder="e.g. Matte Black iPhone 15 Pro" required>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="item-category">Category *</label>
+                    <select id="item-category" required>
+                      <!-- Populated via JS -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="item-location">Last Seen Location *</label>
+                    <select id="item-location" required>
+                      <!-- Populated via JS -->
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="item-color">Primary Color *</label>
+                    <input type="text" id="item-color" placeholder="e.g. Black" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="item-date" id="date-label">Date Lost *</label>
+                    <input type="date" id="item-date" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="item-desc">Item Description & Distinct Features</label>
+                  <textarea id="item-desc" rows="4" placeholder="Provide extra descriptors like brand names, serial numbers, keychain charms, or wallpapers. This aids administrative ownership verification."></textarea>
+                </div>
+
+                <div id="report-form-alert" class="alert-message hidden"></div>
+                <button type="submit" class="btn btn-accent"><i class="fa-solid fa-paper-plane"></i> File Report & Execute Engine</button>
+              </form>
+            </div>
+
+            <!-- Right side information -->
+            <div class="info-card">
+              <h3>DBMS Enforcements</h3>
+              <ul class="dms-checklist">
+                <li><i class="fa-solid fa-circle-check text-accent"></i> <strong>Trigger execution:</strong> Auto-matching runs post-insert, scoring values.</li>
+                <li><i class="fa-solid fa-circle-check text-accent"></i> <strong>Constraint check:</strong> Date values checked via `chk_lost_date` or `chk_found_date` to prevent future dates.</li>
+                <li><i class="fa-solid fa-circle-check text-accent"></i> <strong>Audit Log execution:</strong> Automatical insertion into `audit_log` records table columns.</li>
+              </ul>
+
+              <div class="sql-preview-box">
+                <h4>Behind The Query</h4>
+                <pre>
+-- Runs Stored Procedure
+CALL sp_AddLostItem(
+  @current_user_id,
+  'Matte Black iPhone 15 Pro',
+  'Description...',
+  category_id,
+  location_id,
+  'Black',
+  '2026-06-04'
+);</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: SEARCH DATABASE                                      -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-search">
+          <div class="card mb-24">
+            <h2>Filter & Search Database Rows</h2>
+            <p class="text-muted">Searches index-optimized rows using stored procedure `sp_SearchItems`</p>
+            
+            <form id="search-filter-form" class="search-filters">
+              <div class="search-field">
+                <label>Table Target</label>
+                <select id="search-type">
+                  <option value="lost">Lost Reports Database</option>
+                  <option value="found">Found Items Registry</option>
+                </select>
+              </div>
+              <div class="search-field">
+                <label>Keyword / Title</label>
+                <input type="text" id="search-title" placeholder="Search by name...">
+              </div>
+              <div class="search-field">
+                <label>Category</label>
+                <select id="search-category">
+                  <option value="">All Categories</option>
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+              <div class="search-field">
+                <label>Location</label>
+                <select id="search-location">
+                  <option value="">All Locations</option>
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+              <div class="search-field">
+                <label>Color</label>
+                <input type="text" id="search-color" placeholder="e.g. Black">
+              </div>
+              <button type="submit" class="btn btn-primary btn-search"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Result Data Rows</h2>
+              <span class="badge badge-outline" id="search-count">0 records</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="search-results-table">
+                <thead>
+                  <tr id="search-table-headers">
+                    <!-- Dynamic -->
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: CLAIMS VERIFICATION (ADMIN / USER VISUALIZER)        -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-claims">
+          <!-- Submission Container for User / Review Container for Admin -->
+          <div id="admin-claims-view" class="claims-layout hidden">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2>Verification & Ownership Requests (Claims)</h2>
+                  <p class="text-muted">Requires approval. Processing claims runs database transactions.</p>
+                </div>
+                <span class="badge badge-accent">START TRANSACTION Enforced</span>
+              </div>
+              <div class="table-responsive mt-16">
+                <table class="data-table" id="claims-table">
+                  <thead>
+                    <tr>
+                      <th>Claim ID</th>
+                      <th>Claimant</th>
+                      <th>Lost Report</th>
+                      <th>Found Match</th>
+                      <th>Ownership Proof</th>
+                      <th>Filed Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Filled via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Mode: File Claim Form -->
+          <div id="user-claims-view" class="card">
+            <h2>Claim Matching Found Asset</h2>
+            <p class="text-muted mb-24">If you see a suggestion on the dashboard that matches your lost item, select the match ID below and submit verification proof.</p>
+            
+            <form id="submit-claim-form" class="max-w-600">
+              <div class="form-group">
+                <label for="claim-match-id">Select Suggested Match (Verification Pair)</label>
+                <select id="claim-match-id" required>
+                  <option value="">-- Choose active matching pair --</option>
+                  <!-- Dynamically filled -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="claim-proof">Write Proof of Ownership (Passwords, wall papers, distinct marks) *</label>
+                <textarea id="claim-proof" rows="5" placeholder="State credentials, serial number, description of case, lock-screen wallpaper, folders inside bags, or exact timestamp when it went missing. This will be verified by the admin." required></textarea>
+              </div>
+
+              <div id="claim-form-alert" class="alert-message hidden"></div>
+              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-stamp"></i> Initiate Claim Transaction</button>
+            </form>
+          </div>
+
+          <!-- Claim Transaction Flowchart Visualizer (For students/viva demonstration) -->
+          <div class="card mt-24">
+            <h3>Claim Approval Transaction Schema</h3>
+            <div class="transaction-flow-viz">
+              <div class="flow-step"><i class="fa-solid fa-lock"></i> 1. START TRANSACTION</div>
+              <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+              <div class="flow-step"><i class="fa-solid fa-pen-nib"></i> 2. UPDATE claim status = 'approved'</div>
+              <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+              <div class="flow-step"><i class="fa-solid fa-rotate"></i> 3. UPDATE lost/found status = 'returned'</div>
+              <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+              <div class="flow-step"><i class="fa-solid fa-bell"></i> 4. INSERT user notification</div>
+              <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+              <div class="flow-step"><i class="fa-solid fa-check-double"></i> 5. COMMIT (Rollback on exception)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: REPORT CENTER                                        -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-reports">
+          <div class="card mb-24">
+            <h2>Academic Reporting and Data Export</h2>
+            <p class="text-muted">Compile logs and export table contents in multiple standardized formats (CSV, JSON).</p>
+            
+            <div class="reports-action-grid mt-24">
+              <!-- Report cards -->
+              <div class="report-export-card">
+                <div class="card-icon text-yellow"><i class="fa-solid fa-file-circle-exclamation"></i></div>
+                <h3>Lost Items Registry</h3>
+                <p>Contains full catalog of lost reports, categories, and colors.</p>
+                <div class="export-btns">
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="lost" data-format="json">JSON</a>
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="lost" data-format="csv">CSV</a>
+                </div>
+              </div>
+
+              <div class="report-export-card">
+                <div class="card-icon text-green"><i class="fa-solid fa-file-circle-check"></i></div>
+                <h3>Found Items Registry</h3>
+                <p>Register of items turned in by finder students.</p>
+                <div class="export-btns">
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="found" data-format="json">JSON</a>
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="found" data-format="csv">CSV</a>
+                </div>
+              </div>
+
+              <div class="report-export-card">
+                <div class="card-icon text-purple"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <h3>Claims Database</h3>
+                <p>Verification requests and ownership claims history.</p>
+                <div class="export-btns">
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="claims" data-format="json">JSON</a>
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="claims" data-format="csv">CSV</a>
+                </div>
+              </div>
+
+              <div class="report-export-card">
+                <div class="card-icon text-blue"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Database Audit Log</h3>
+                <p>Internal audit trail documenting table edits (Triggers).</p>
+                <div class="export-btns">
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="audit" data-format="json">JSON</a>
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="audit" data-format="csv">CSV</a>
+                </div>
+              </div>
+
+              <div class="report-export-card">
+                <div class="card-icon text-accent"><i class="fa-solid fa-chart-simple"></i></div>
+                <h3>Database Summary Report</h3>
+                <p>Summarized metrics and KPI statistics view.</p>
+                <div class="export-btns">
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="summary" data-format="json">JSON</a>
+                  <a href="#" class="btn btn-sm btn-outline btn-export" data-table="summary" data-format="csv">CSV</a>
+                </div>
+              </div>
+
+              <div class="report-export-card">
+                <div class="card-icon text-yellow"><i class="fa-solid fa-database"></i></div>
+                <h3>Database SQL Backup</h3>
+                <p>Download full DDL & DML Schema Script file.</p>
+                <div class="export-btns">
+                  <a href="/api/system/backup/sql" class="btn btn-sm btn-accent" download>Download SQL Script</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: DATABASE MONITOR                                     -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-monitor">
+          <div class="card mb-24">
+            <div class="card-header">
+              <div>
+                <h2>Real-Time Database Monitor Diagnostics</h2>
+                <p class="text-muted">Inspect MySQL table size, record metrics, and active session threads</p>
+              </div>
+              <span id="monitor-conn-badge" class="badge badge-accent">Checking Connection...</span>
+            </div>
+
+            <!-- Monitor Stat Box -->
+            <div class="monitor-stats-grid mt-24">
+              <div class="mon-card">
+                <span class="lbl text-muted">Total Tables</span>
+                <span class="val" id="mon-total-tables">0</span>
+              </div>
+              <div class="mon-card">
+                <span class="lbl text-muted">Total Records (Rows)</span>
+                <span class="val" id="mon-total-records">0</span>
+              </div>
+              <div class="mon-card">
+                <span class="lbl text-muted">Database Storage Size</span>
+                <span class="val" id="mon-db-size">0.00 MB</span>
+              </div>
+              <div class="mon-card">
+                <span class="lbl text-muted">Active Users (24h)</span>
+                <span class="val" id="mon-active-users">0</span>
+              </div>
+            </div>
+            
+            <div class="monitor-details mt-24">
+              <div class="mon-box">
+                <h4>Last Dynamic Changes</h4>
+                <div class="detail-row">
+                  <span>Last INSERT Event:</span>
+                  <span id="mon-last-insert" class="time-stamp">N/A</span>
+                </div>
+                <div class="detail-row">
+                  <span>Last UPDATE Event:</span>
+                  <span id="mon-last-update" class="time-stamp">N/A</span>
+                </div>
+              </div>
+              <div class="mon-box">
+                <h4>MySQL Engine Specifications</h4>
+                <div class="detail-row">
+                  <span>Target Database Name:</span>
+                  <span>lost_and_found_db</span>
+                </div>
+                <div class="detail-row">
+                  <span>Storage Engine:</span>
+                  <span>InnoDB (Transaction Safe)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity Log (from Audit logs) -->
+          <div class="card">
+            <h3>Recent Database Statements Executed</h3>
+            <div class="table-responsive mt-16">
+              <table class="data-table" id="mon-activity-table">
+                <thead>
+                  <tr>
+                    <th>Event Type</th>
+                    <th>Table Name</th>
+                    <th>Record ID</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: AUDIT LOG SYSTEM                                     -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-audit">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Enterprise Audit Log Trail</h2>
+                <p class="text-muted">Captures all INSERT, UPDATE, DELETE changes across tables through native database triggers.</p>
+              </div>
+              <span class="badge badge-outline">Trigger-Generated</span>
+            </div>
+            
+            <div class="table-responsive mt-24">
+              <table class="data-table" id="audit-table">
+                <thead>
+                  <tr>
+                    <th>Log ID</th>
+                    <th>Executing User</th>
+                    <th>Action</th>
+                    <th>Table Name</th>
+                    <th>Record ID</th>
+                    <th>Action Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- PANE: DBMS DEMONSTRATION & VIVA GUIDE                      -->
+        <!-- ========================================================= -->
+        <div class="pane" id="pane-viva">
+          <div class="viva-guide-container">
+            
+            <!-- Quick overview -->
+            <div class="card mb-24">
+              <h2>University Examiner Viva Guide & DBMS Demonstration</h2>
+              <p class="text-muted">Showcase core DBMS concepts implemented in this system to secure full credit.</p>
+            </div>
+
+            <!-- Tab Buttons inside Viva -->
+            <div class="viva-tabs">
+              <button class="viva-tab-btn active" onclick="switchVivaTab('viva-schema')">Schema & Keys</button>
+              <button class="viva-tab-btn" onclick="switchVivaTab('viva-norm')">Normalization (3NF)</button>
+              <button class="viva-tab-btn" onclick="switchVivaTab('viva-code')">Triggers & Procs</button>
+              <button class="viva-tab-btn" onclick="switchVivaTab('viva-q')">Viva Q&A</button>
+            </div>
+
+            <!-- Subpane: Schema -->
+            <div class="viva-subpane active" id="viva-schema">
+              <div class="card">
+                <h3>Relational Database Structure</h3>
+                <p class="mb-16">The system is designed with strict relational constraints, optimizing indexing, cascade configurations, and primary/foreign keys.</p>
+                
+                <div class="grid-2col">
+                  <div>
+                    <h4>Physical Entities Overview</h4>
+                    <ul class="dms-checklist mt-16">
+                      <li><strong>Primary Keys (PK):</strong> Unique identifiers, auto-incrementing integers, enforced on every table.</li>
+                      <li><strong>Foreign Keys (FK):</strong>
+                        <ul>
+                          <li>`lost_items.user_id` &rarr; `users.user_id` (CASCADE on delete)</li>
+                          <li>`lost_items.category_id` &rarr; `categories.category_id` (RESTRICT on delete to prevent orphans)</li>
+                          <li>`claims.lost_id` &rarr; `lost_items.lost_id` (CASCADE)</li>
+                        </ul>
+                      </li>
+                      <li><strong>Unique Constraints:</strong> `users.email` (prevent duplicate registrations) and composite unique key `match_suggestions(lost_id, found_id)`.</li>
+                    </ul>
+                  </div>
+
+                  <div class="code-concept-box">
+                    <h4>DDL Primary/Foreign Enforcements</h4>
+                    <pre>
+CREATE TABLE lost_items (
+  lost_id INT AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  category_id INT NOT NULL,
+  CONSTRAINT pk_lost_items PRIMARY KEY (lost_id),
+  CONSTRAINT fk_lost_items_user 
+    FOREIGN KEY (user_id) REFERENCES users(user_id) 
+    ON DELETE CASCADE,
+  CONSTRAINT fk_lost_items_category 
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) 
+    ON DELETE RESTRICT
+);</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subpane: Normalization -->
+            <div class="viva-subpane" id="viva-norm">
+              <div class="card">
+                <h3>Normal Form (1NF &rarr; 2NF &rarr; 3NF) Proofs</h3>
+                
+                <div class="normalization-step">
+                  <h4>1. First Normal Form (1NF)</h4>
+                  <p><strong>Rule:</strong> All column cells must contain atomic values (no lists, no repeating groups). We must have a Primary Key.</p>
+                  <p class="text-success"><i class="fa-solid fa-check"></i> <strong>Proof in our DB:</strong> Colors and keywords are strings, categories are atomic integers, not comma-separated lists. Every row contains a unique PK (`user_id`, `lost_id`, etc.).</p>
+                </div>
+
+                <div class="normalization-step mt-16">
+                  <h4>2. Second Normal Form (2NF)</h4>
+                  <p><strong>Rule:</strong> Must be in 1NF, and all non-key columns must depend on the *entire* Primary Key (No partial dependency on composite keys).</p>
+                  <p class="text-success"><i class="fa-solid fa-check"></i> <strong>Proof in our DB:</strong> Our primary keys are single columns (auto-incrementing integers). This automatically eliminates partial dependencies because there are no composite primary keys, keeping non-key fields bound directly to the single PK.</p>
+                </div>
+
+                <div class="normalization-step mt-16">
+                  <h4>3. Third Normal Form (3NF)</h4>
+                  <p><strong>Rule:</strong> Must be in 2NF, and no non-key columns can depend on other non-key columns (No transitive dependencies).</p>
+                  <p class="text-success"><i class="fa-solid fa-check"></i> <strong>Proof in our DB:</strong> Items only save `category_id` and `location_id`. The names and descriptions of categories or locations are stored in separate tables (`categories`, `locations`). If they were stored in `lost_items`, it would create a transitive dependency (e.g. `lost_id &rarr; category_id &rarr; category_name`). Splitting them satisfies 3NF.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subpane: Triggers & Procs -->
+            <div class="viva-subpane" id="viva-code">
+              <div class="card">
+                <h3>Triggers, Transactions & Stored Procedures</h3>
+                <p class="mb-16">This system utilizes advanced MySQL 8.0 procedural logic to automate matches and execute transactions.</p>
+                
+                <div class="grid-2col">
+                  <div>
+                    <h4>Transactions & Stored Procedures</h4>
+                    <p>When a claim is approved, the system starts a transaction. Multiple statements must succeed together:</p>
+                    <ol class="num-list mt-8">
+                      <li>Update claim row to `approved`.</li>
+                      <li>Update the matching Lost Item to `returned`.</li>
+                      <li>Update the matching Found Item to `returned`.</li>
+                      <li>Generate notifications and log the action.</li>
+                    </ol>
+                    <p class="mt-8 text-muted">If any update fails, MySQL executes the `EXIT HANDLER` and rolls back the changes to maintain ACID properties.</p>
+                  </div>
+
+                  <div class="code-concept-box">
+                    <h4>Procedure Code Draft</h4>
+                    <pre>
+CREATE PROCEDURE sp_ApproveClaim(IN p_claim_id INT, ...)
+BEGIN
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+
+  START TRANSACTION;
+  -- Updates claims, items, inserts audit log
+  COMMIT;
+END;</pre>
+                  </div>
+                </div>
+
+                <div class="grid-2col mt-24">
+                  <div>
+                    <h4>Auto-Matching Triggers</h4>
+                    <p>When a student files a lost or found report, a trigger executes `AFTER INSERT`. It runs a similarity query comparing:</p>
+                    <ul class="dms-checklist mt-8">
+                      <li>Category (40% match weight)</li>
+                      <li>Location (20% match weight)</li>
+                      <li>Color (20% match weight)</li>
+                      <li>Title overlap (20% match weight)</li>
+                    </ul>
+                    <p class="mt-8">If the total score is &ge; 50, it logs a row in `match_suggestions` and sends notifications immediately.</p>
+                  </div>
+
+                  <div class="code-concept-box">
+                    <h4>Trigger Code Draft</h4>
+                    <pre>
+CREATE TRIGGER trg_lost_items_match 
+AFTER INSERT ON lost_items FOR EACH ROW
+BEGIN
+  INSERT INTO match_suggestions
+  SELECT NEW.lost_id, found_id, 
+         (category_score + loc_score + color_score)
+  FROM found_items
+  HAVING score >= 50;
+END;</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subpane: Viva Questions -->
+            <div class="viva-subpane" id="viva-q">
+              <div class="card">
+                <h3>Top Viva Questions and Answers</h3>
+                
+                <div class="qa-item">
+                  <span class="q">Q1. What is the difference between a Trigger and a Stored Procedure?</span>
+                  <p class="a"><strong>Answer:</strong> A stored procedure must be explicitly called by the application using `CALL procedure_name(...)`. A trigger is executed implicitly by the DBMS in response to a DML event like `INSERT`, `UPDATE`, or `DELETE` on a specific table.</p>
+                </div>
+
+                <div class="qa-item mt-16">
+                  <span class="q">Q2. How is transaction integrity (ACID) maintained during claim approval?</span>
+                  <p class="a"><strong>Answer:</strong> We wrap the operations in `START TRANSACTION` and `COMMIT` blocks inside `sp_ApproveClaim`. If any update violates foreign keys or fails, MySQL triggers a rollback via the `DECLARE EXIT HANDLER FOR SQLEXCEPTION`, reverting all tables to their initial state to ensure consistency.</p>
+                </div>
+
+                <div class="qa-item mt-16">
+                  <span class="q">Q3. Why did you use Views in your Dashboard statistics?</span>
+                  <p class="a"><strong>Answer:</strong> Views like `vw_monthly_statistics` encapsulating complex subqueries simplify our backend code, improve security by hiding base tables, and run efficiently because the SQL query planner caches the view definition.</p>
+                </div>
+
+                <div class="qa-item mt-16">
+                  <span class="q">Q4. Explain how your Audit Logging system works.</span>
+                  <p class="a"><strong>Answer:</strong> We have triggers defined `AFTER INSERT`, `AFTER UPDATE`, and `AFTER DELETE` on core tables. Whenever a change occurs, the trigger inserts a row containing the user ID, timestamp, operation type, table name, and a JSON dump of the old/new values using MySQL's native `JSON_OBJECT()` functions.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Custom Dialog Modals (e.g. Approve/Reject notes) -->
+  <div id="action-modal" class="modal hidden">
+    <div class="modal-card">
+      <h3 id="modal-title">Admin Review Action</h3>
+      <div class="form-group mt-16">
+        <label for="modal-input" id="modal-input-label">Notes / Reasons</label>
+        <textarea id="modal-input" rows="3" placeholder="Enter comments here..."></textarea>
+      </div>
+      <div class="modal-actions mt-24">
+        <button id="modal-cancel-btn" class="btn btn-outline">Cancel</button>
+        <button id="modal-submit-btn" class="btn btn-primary">Submit Decision</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom JS Application Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
